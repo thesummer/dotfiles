@@ -31,6 +31,10 @@ set-window-option -g window-status-format " #I #W"
 set-window-option -g window-status-current-style fg=$base0C,bg=$base00
 set-window-option -g window-status-current-format " #[bold]#W"
 
+#set inactive/active window styles
+set -g window-style 'fg=colour247,bg=colour236'
+set -g window-active-style 'fg=colour250,bg=black'
+
 # pane border colors
 set-window-option -g pane-active-border-style fg=$base0C
 set-window-option -g pane-border-style fg=$base03
@@ -48,10 +52,8 @@ set-window-option -g clock-mode-colour $base0C
 tm_session_name="#[default,bg=$base00,fg=$base0E] #S "
 set -g status-left "$tm_session_name"
 
-tm_tunes="#[bg=$base00,fg=$base0D] ♫ #(osascript -l JavaScript ~/.dotfiles/applescripts/tunes.js)"
-# tm_tunes="#[fg=$tm_color_music]#(osascript ~/.dotfiles/applescripts/tunes.scpt | cut -c 1-50)"
 # tm_battery="#(~/.dotfiles/bin/battery_indicator.sh)"
 tm_battery="#[fg=$base0F,bg=$base00] ♥ #(battery)"
 tm_date="#[default,bg=$base00,fg=$base0C] %R"
 tm_host="#[fg=$base0E,bg=$base00] #h "
-set -g status-right "$tm_tunes $tm_battery $tm_date $tm_host"
+set -g status-right "$tm_battery $tm_date $tm_host"
