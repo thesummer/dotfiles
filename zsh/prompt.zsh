@@ -10,7 +10,6 @@ add-zsh-hook precmd async_trigger
 
 source "$DOTFILES/zsh/git_prompt.zsh"
 source "$DOTFILES/zsh/jobs_prompt.zsh"
-source "$DOTFILES/zsh/node_prompt.zsh"
 
 PROMPT_SYMBOL='❯'
 
@@ -38,9 +37,5 @@ function TRAPUSR1() {
     zle && zle reset-prompt
 }
 
-precmd() {
-    print -P "\n%F{005}%~ $(node_prompt)"
-}
-
-export PROMPT='%(?.%F{006}.%F{009})$PROMPT_SYMBOL%f '
+export PROMPT='%(?.%F{006}.%F{009})%~$PROMPT_SYMBOL%f '
 export RPROMPT=''
