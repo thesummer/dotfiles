@@ -54,7 +54,7 @@ call plug#begin('~/.config/nvim/plugged')
 " Appearance {{{
     set number " show line numbers
     set wrap " turn on line wrapping
-    set wrapmargin=8 " wrap lines when coming within n characters from side
+    set wrapmargin=0 " wrap lines when coming within n characters from side
     set linebreak " set soft wrapping
     set showbreak=… " show ellipsis at breaking
     set autoindent " automatically set indent of new line
@@ -166,24 +166,26 @@ call plug#begin('~/.config/nvim/plugged')
 
 " General Mappings {{{
     " set a map leader for more key combos
-"     let mapleader = ','
+    let mapleader = ' '
 
-"     " remap esc
-"     inoremap jk <esc>
+    " remap esc
+    inoremap jk <esc>
+    inoremap kj <esc>
 
-"    " shortcut to save
-"    nmap <leader>, :w<cr>
+    " shortcut to save
+    nmap <leader>s :w<cr>
 
-"    " set paste toggle
-"     set pastetoggle=<leader>v
+    " set paste toggle
+    set pastetoggle=<leader>v
 
-"    " edit ~/.config/nvim/init.vim
-"    map <leader>ev :e! ~/.config/nvim/init.vim<cr>
+    " edit ~/.config/nvim/init.vim
+    map <leader>ev :e! ~/.config/nvim/init.vim<cr>
 "    " edit gitconfig
 "    map <leader>eg :e! ~/.gitconfig<cr>
 
-"    " clear highlighted search
+    " clear highlighted search
 "    noremap <space> :set hlsearch! hlsearch?<cr>
+    noremap <leader>f :set hlsearch! hlsearch?<cr>
 
 "    " activate spell-checking alternatives
 "    nmap ;s :set invspell spelllang=en<cr>
@@ -198,17 +200,17 @@ call plug#begin('~/.config/nvim/plugged')
 "    inoremap <expr> <C-j> pumvisible() ? "\<C-N>" : "\<C-j>"
 "    inoremap <expr> <C-k> pumvisible() ? "\<C-P>" : "\<C-k>"
 
-"    nmap <leader>l :set list!<cr>
+    nmap <leader>l :set list!<cr>
 
-"    " keep visual selection when indenting/outdenting
-"    vmap < <gv
-"    vmap > >gv
+    " keep visual selection when indenting/outdenting
+    vmap < <gv
+    vmap > >gv
 
 "    " switch between current and last buffer
-"    nmap <leader>. <c-^>
+    nmap <leader>k <c-^>
 
-"    " enable . command in visual mode
-"    vnoremap . :normal .<cr>
+    " enable . command in visual mode
+    vnoremap . :normal .<cr>
 
 "    map <silent> <C-h> <Plug>WinMoveLeft
 "    map <silent> <C-j> <Plug>WinMoveDown
@@ -219,36 +221,18 @@ call plug#begin('~/.config/nvim/plugged')
 
 "     map <leader>wc :wincmd q<cr>
 
-    " move line mappings
-    " ∆ is <A-j> on macOS
-    " ˚ is <A-k> on macOS
-"    nnoremap ∆ :m .+1<cr>==
-"    nnoremap ˚ :m .-2<cr>==
-"    inoremap ∆ <Esc>:m .+1<cr>==gi
-"    inoremap ˚ <Esc>:m .-2<cr>==gi
-"    vnoremap ∆ :m '>+1<cr>gv=gv
-"    vnoremap ˚ :m '<-2<cr>gv=gv
+   " toggle cursor line
+    nnoremap <leader>i :set cursorline!<cr>
 
-"    vnoremap $( <esc>`>a)<esc>`<i(<esc>
-"    vnoremap $[ <esc>`>a]<esc>`<i[<esc>
-"    vnoremap ${ <esc>`>a}<esc>`<i{<esc>
-"    vnoremap $" <esc>`>a"<esc>`<i"<esc>
-"    vnoremap $' <esc>`>a'<esc>`<i'<esc>
-"    vnoremap $\ <esc>`>o*/<esc>`<O/*<esc>
-"    vnoremap $< <esc>`>a><esc>`<i<<esc>
-
-    " toggle cursor line
-"    nnoremap <leader>i :set cursorline!<cr>
-
-    " scroll the viewport faster
-"    nnoremap <C-e> 3<C-e>
-"    nnoremap <C-y> 3<C-y>
+   " scroll the viewport faster
+    nnoremap <C-e> 3<C-e>
+    nnoremap <C-y> 3<C-y>
 
     " moving up and down work as you would expect
-"    nnoremap <silent> j gj
-"    nnoremap <silent> k gk
-"    nnoremap <silent> ^ g^
-"    nnoremap <silent> $ g$
+    nnoremap <silent> j gj
+    nnoremap <silent> k gk
+    nnoremap <silent> ^ g^
+    nnoremap <silent> $ g$
 
     " helpers for dealing with other people's code
 "    nmap \t :set ts=4 sts=4 sw=4 noet<cr>
@@ -280,22 +264,22 @@ call plug#begin('~/.config/nvim/plugged')
 " }}}
 
 " AutoGroups {{{
-"     " file type specific settings
-"    augroup configgroup
-"        autocmd!
-" 
-"         " automatically resize panes on resize
-"        autocmd VimResized * exe 'normal! \<c-w>='
-"        autocmd BufWritePost .vimrc,.vimrc.local,init.vim source %
-"        autocmd BufWritePost .vimrc.local source %
-"        " save all files on focus lost, ignoring warnings about untitled buffers
+     " file type specific settings
+    augroup configgroup
+        autocmd!
+ 
+        " automatically resize panes on resize
+        autocmd VimResized * exe 'normal! \<c-w>='
+        autocmd BufWritePost .vimrc,.vimrc.local,init.vim source %
+        autocmd BufWritePost .vimrc.local source %
+        " save all files on focus lost, ignoring warnings about untitled buffers
 "        autocmd FocusLost * silent! wa
-" 
+ 
 "        " make quickfix windows take all the lower section of the screen
 "        " when there are multiple windows open
 "        autocmd FileType qf wincmd J
 "        autocmd FileType qf nmap <buffer> q :q<cr>
-"    augroup END
+    augroup END
 " }}}
 
 " General Functionality {{{
@@ -652,23 +636,28 @@ call plug#end()
     else
 "        let g:onedark_termcolors=16
 "        let g:onedark_terminal_italics=1
+        let s:colors = onedark#GetColors()
+        autocmd Colorscheme * call onedark#set_highlight("Normal", { "fg": s:colors.white })
+        let g:onedark_color_overrides = {
+		\ "cursor_grey" : { "gui": "#2C323C", "cterm": "237", "cterm16": "8" }
+		\ }
         if (has("termguicolors"))
             set termguicolors
         endif
         colorscheme onedark
     endif
-"    syntax on
+    syntax on
 "    filetype plugin indent on
 "    " make the highlighting of tabs and other non-text less annoying
 "    highlight SpecialKey ctermfg=19 guifg=#333333
 "    highlight NonText ctermfg=19 guifg=#333333
 " 
-"    " make comments and HTML attributes italic
-"    highlight Comment cterm=italic term=italic gui=italic
+    " make comments and HTML attributes italic
+    highlight Comment cterm=italic term=italic gui=italic
 "    highlight htmlArg cterm=italic term=italic gui=italic
 "    highlight xmlAttrib cterm=italic term=italic gui=italic
-"    " highlight Type cterm=italic term=italic gui=italic
-"    highlight Normal ctermbg=none
+    highlight Type cterm=italic term=italic gui=italic
+    highlight Normal ctermbg=none
 "  }}}
 
 " vim:set foldmethod=marker foldlevel=0
