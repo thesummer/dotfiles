@@ -145,6 +145,7 @@ call plug#begin('~/.config/nvim/plugged')
             \       'filename': 'helpers#lightline#fileName',
             \       'fileformat': 'helpers#lightline#fileFormat',
             \       'filetype': 'helpers#lightline#fileType',
+            \       'gitbranch': 'helpers#lightline#gitBranch',
             \   } }
 "             \   'component_function': {
 "             \       'fileencoding': 'helpers#lightline#fileEncoding',
@@ -477,8 +478,8 @@ call plug#begin('~/.config/nvim/plugged')
     " }}}
 " 
 "    " vim-fugitive {{{
-"        Plug 'tpope/vim-fugitive'
-"        nmap <silent> <leader>gs :Gstatus<cr>
+        Plug 'tpope/vim-fugitive'
+        nmap <silent> <leader>gs :Gstatus<cr>
 "        nmap <leader>ge :Gedit<cr>
 "        nmap <silent><leader>gr :Gread<cr>
 "        nmap <silent><leader>gb :Gblame<cr>
