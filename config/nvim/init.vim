@@ -486,6 +486,7 @@ call plug#begin('~/.config/nvim/plugged')
 " 
 "        Plug 'tpope/vim-rhubarb' " hub extension for fugitive
 "        Plug 'sodapopcan/vim-twiggy'
+        Plug 'junegunn/gv.vim' " git graph plugin
 "    " }}}
 " 
 "    " UltiSnips {{{
