@@ -303,12 +303,15 @@ call plug#begin('~/.config/nvim/plugged')
     " substitute, search, and abbreviate multiple variants of a word
 "     Plug 'tpope/vim-abolish'
 
+
     " easy commenting motions
 "    Plug 'tpope/vim-commentary'
 
     " mappings which are simply short normal mode aliases for commonly used ex commands
     Plug 'tpope/vim-unimpaired'
 
+	" Allow diffing entire directories
+	Plug 'will133/vim-dirdiff'
     " endings for html, xml, etc. - ehances surround
 "    Plug 'tpope/vim-ragtag'
 
