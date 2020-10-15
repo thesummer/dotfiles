@@ -1,3 +1,4 @@
+set-option -g default-shell /bin/zsh
 # set -g default-command "login-shell"
  
 # tmux display things in 256 colors
@@ -59,7 +60,7 @@ bind r source-file ~/.tmux.conf \; display "Config Reloaded!"
 # bind | split-window -h -c "#{pane_current_path}"
 bind / split-window -h -c "#{pane_current_path}"
 # bind - split-window -v -c "#{pane_current_path}"
-bind \\ split-window -v -c "#{pane_current_path}"
+bind \; split-window -v -c "#{pane_current_path}"
 
 # synchronize all panes in a window
 bind y setw synchronize-panes
