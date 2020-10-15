@@ -40,6 +40,7 @@ compinit
 
 prepend_path $DOTFILES/bin
 prepend_path $HOME/bin
+prepend_path $HOME/.local/bin
 prepend_path $HOME/software/bin/bin
 
 # display how long all tasks over 10 seconds take
@@ -83,7 +84,7 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 zstyle ':completion:*' insert-tab pending
 
 # default to file completion
-zstyle ':completion:*' completer _expand _complete _files _correct
+zstyle ':completion:*' completer _expand _complete _files
 
 # complete ..<TAB> to ../ (see https://stackoverflow.com/questions/564648/zsh-tab-completion-for-cd)
 zstyle ':completion:*' special-dirs true
@@ -146,6 +147,13 @@ export LESS_TERMCAP_ue=$(tput rmul; tput sgr0)
 export LESS_TERMCAP_mr=$(tput rev)
 export LESS_TERMCAP_mh=$(tput dim)
 
+# Add module system
+if [ -f /usr/share/modules/init/zsh ]; then
+	source /usr/share/modules/init/zsh 
+	source "$DOTFILES/zsh/module_complete.zsh"
+fi
+
+
 ########################################################
 # Aliases
 ########################################################
@@ -186,5 +194,6 @@ alias ta='tmux attach'
 alias tls='tmux ls'
 alias tat='tmux attach -t'
 alias tns='tmux new-session -s'
+alias modav='module av 2>&1 | less'  
 # fnm
 # eval "$(fnm env --multi)"
