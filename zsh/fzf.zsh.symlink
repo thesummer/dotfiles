@@ -1,0 +1,13 @@
+# Setup fzf
+# ---------
+if [[ ! "$PATH" == */home/somm_ja/.dotfiles/contrib/fzf/bin* ]]; then
+  export PATH="${PATH:+${PATH}:}/home/somm_ja/.dotfiles/contrib/fzf/bin"
+fi
+
+# Auto-completion
+# ---------------
+[[ $- == *i* ]] && source "/home/somm_ja/.dotfiles/contrib/fzf/shell/completion.zsh" 2> /dev/null
+
+# Key bindings
+# ------------
+source "/home/somm_ja/.dotfiles/contrib/fzf/shell/key-bindings.zsh"
