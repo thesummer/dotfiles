@@ -33,4 +33,10 @@ if [[ "$SHELL" != "$zsh_path" ]]; then
     echo "default shell changed to $zsh_path"
 fi
 
+# Configure fzf
+echo "Configuring fzf"
+git submodule update --init
+contrib/fzf/install
+
+
 echo "Done. Reload your terminal."
