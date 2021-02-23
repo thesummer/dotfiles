@@ -69,13 +69,43 @@ setopt HIST_EXPIRE_DUPS_FIRST
 setopt COMPLETE_ALIASES
 
 # make terminal command navigation sane again
-bindkey '^[^[[D' backward-word
-bindkey '^[^[[C' forward-word
-bindkey '^[[5D' beginning-of-line
-bindkey '^[[5C' end-of-line
-bindkey '^[[3~' delete-char
-bindkey '^?' backward-delete-char
-bindkey "^A" vi-beginning-of-line
+set -o emacs
+# Putty
+if  [[ $TERM == "xterm"* ]]; then
+    bindkey "^[OC" forward-word                      # [Ctrl-right] - forward one word
+    bindkey "^[OD" backward-word                     # [Ctrl-left] - backward one word
+    bindkey "^[^[[D" beginning-of-line                  # [Alt-left] - beginning of line
+    bindkey "^[^[[C"  end-of-line                       # [Alt-right] - end of line
+else
+# Putty+tmux compatibility
+    bindkey "^[[1;5C" forward-word                      # [Ctrl-right] - forward one word
+    bindkey "^[[1;5D" backward-word                     # [Ctrl-left] - backward one word
+	# Doesn't work in tmux  ¯\_(ツ)_/¯
+    bindkey "^[^[[D" beginning-of-line                  # [Alt-left] - beginning of line
+    bindkey "^[^[[C" end-of-line                       # [Alt-right] - end of line
+fi
+# Other (not yet fully figured out)
+#bindkey '^[^[[C' forward-word                       # [Ctrl-right] - forward one word
+#bindkey '^[^[[D' backward-word                      # [Ctrl-left] - backward one word
+# bindkey '^[[1;3D' beginning-of-line                 # [Alt-left] - beginning of line
+# bindkey '^[[1;3C' end-of-line                       # [Alt-right] - end of line
+# bindkey '^[[5D' beginning-of-line                   # [Alt-left] - beginning of line
+# bindkey '^[[5C' end-of-line                         # [Alt-right] - end of line
+# bindkey '^?' backward-delete-char                   # [Backspace] - delete backward
+#
+if [[ "${terminfo[kdch1]}" != "" ]]; then
+    bindkey "${terminfo[kdch1]}" delete-char        # [Delete] - delete forward
+else
+    bindkey "^[[3~" delete-char                     # [Delete] - delete forward
+    bindkey "^[3;5~" delete-char
+    bindkey "\e[3~" delete-char
+fi
+
+# bindkey "^A" vi-beginning-of-line
+# bindkey -M viins "^F" vi-forward-word               # [Ctrl-f] - move to next word
+# bindkey -M viins "^E" vi-add-eol                    # [Ctrl-e] - move to end of line
+# bindkey "^J" history-beginning-search-forward
+# bindkey "^K" history-beginning-search-backward
 
 # matches case insensitive for lowercase
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
@@ -130,10 +160,10 @@ else
   export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 fi
 
-# move to next word with ctrl-F
-bindkey -M viins "^F" vi-forward-word
-# Move to end of line with ctrl-E
-bindkey -M viins "^E" vi-add-eol
+## move to next word with ctrl-F
+#bindkey -M viins "^F" vi-forward-word
+## Move to end of line with ctrl-E
+#bindkey -M viins "^E" vi-add-eol
 
 # add color to man pages
 export MANROFFOPT='-c'
