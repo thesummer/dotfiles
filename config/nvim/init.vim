@@ -46,9 +46,9 @@ call plug#begin('~/.config/nvim/plugged')
     set visualbell
     set t_vb=
 
-	" set command timeout to 500 ms 
-    set timeout	
-	set timeoutlen=500
+    " set command timeout to 500 ms 
+    set timeout
+    set timeoutlen=500
 " }}}
 
 " Appearance {{{
@@ -76,6 +76,8 @@ call plug#begin('~/.config/nvim/plugged')
 "    set shortmess+=c ???
 
     " Tab control 
+    set expandtab " Replace tabs with spaces
+    autocmd FileType make setlocal noexpandtab " Do not replace tabs with spaces in Makefiles
     set smarttab " tab respects 'tabstop', 'shiftwidth', and 'softtabstop'
     set tabstop=4 " the visible width of tabs
     set softtabstop=4 " edit as if the tabs are 4 characters wide
@@ -125,7 +127,7 @@ call plug#begin('~/.config/nvim/plugged')
 "        Plug 'nicknisi/vim-base16-lightline'
         let g:lightline = {
             \   'colorscheme': 'onedark', 
-			\   'active': {
+            \   'active': {
             \       'left': [ [ 'mode', 'paste' ],
             \               [ 'gitbranch' ],
             \               [ 'readonly', 'filetype', 'filename' ]],
@@ -179,17 +181,17 @@ call plug#begin('~/.config/nvim/plugged')
     inoremap jk <esc>
     inoremap kj <esc>
 
-	map <C-h> <C-w>h
-	map <C-j> <C-w>j
-	map <C-k> <C-w>k
-	map <C-l> <C-w>l
-	map <C-\> <C-w>s
-	map <C-_> <C-w>v
+    map <C-h> <C-w>h
+    map <C-j> <C-w>j
+    map <C-k> <C-w>k
+    map <C-l> <C-w>l
+    map <C-\> <C-w>s
+    map <C-_> <C-w>v
     " shortcut to save
     nmap <leader>s :w<cr>
 
-	" Close current buffer
-	nmap <leader>q :bd<cr>
+    " Close current buffer
+    nmap <leader>q :bd<cr>
 
     " set paste toggle
     set pastetoggle=<leader>v
@@ -310,8 +312,8 @@ call plug#begin('~/.config/nvim/plugged')
     " mappings which are simply short normal mode aliases for commonly used ex commands
     Plug 'tpope/vim-unimpaired'
 
-	" Allow diffing entire directories
-	Plug 'will133/vim-dirdiff'
+    " Allow diffing entire directories
+    Plug 'will133/vim-dirdiff'
     " endings for html, xml, etc. - ehances surround
 "    Plug 'tpope/vim-ragtag'
 
@@ -396,9 +398,9 @@ call plug#begin('~/.config/nvim/plugged')
         let NERDTreeDirArrowExpandable = "\u00a0" " make arrows invisible
         let NERDTreeDirArrowCollapsible = "\u00a0" " make arrows invisible
         let NERDTreeNodeDelimiter = "\u263a" " smiley face
-		let g:NERDTreeFileExtensionHighlightFullName = 1
-		let g:NERDTreeExactMatchHighlightFullName = 1
-		let g:NERDTreePatternMatchHighlightFullName = 1
+        let g:NERDTreeFileExtensionHighlightFullName = 1
+        let g:NERDTreeExactMatchHighlightFullName = 1
+        let g:NERDTreePatternMatchHighlightFullName = 1
  
 "        augroup nerdtree
 "            autocmd!
@@ -421,7 +423,7 @@ call plug#begin('~/.config/nvim/plugged')
 
         let NERDTreeShowHidden=1
         let NERDTreeAutoDeleteBuffer=1
-		let g:NERDTreeQuitOnOpen=1
+        let g:NERDTreeQuitOnOpen=1
         let NERDTreeDirArrowExpandable = '▷'
         let NERDTreeDirArrowCollapsible = '▼'
         let g:NERDTreeIndicatorMapCustom = {
@@ -485,7 +487,7 @@ call plug#begin('~/.config/nvim/plugged')
         nmap <silent> <leader>gs :Gstatus<cr>
 "        nmap <leader>ge :Gedit<cr>
 "        nmap <silent><leader>gr :Gread<cr>
-"        nmap <silent><leader>gb :Gblame<cr>
+        nmap <silent><leader>gb :Gblame<cr>
 " 
 "        Plug 'tpope/vim-rhubarb' " hub extension for fugitive
 "        Plug 'sodapopcan/vim-twiggy'
@@ -595,7 +597,7 @@ call plug#begin('~/.config/nvim/plugged')
 "        " pug / jade support
 "        Plug 'digitaltoad/vim-pug', { 'for': ['jade', 'pug'] }
 " 
-" 		" nunjucks support
+"         " nunjucks support
 "        Plug 'niftylettuce/vim-jinja', { 'for': 'njk' }
 "    " }}}
 " 
@@ -603,9 +605,9 @@ call plug#begin('~/.config/nvim/plugged')
 "        Plug 'othree/yajs.vim', { 'for': [ 'javascript', 'javascript.jsx', 'html' ] }
 "        " Plug 'pangloss/vim-javascript', { 'for': ['javascript', 'javascript.jsx', 'html'] }
 "        Plug 'moll/vim-node', { 'for': 'javascript' }
-" 		Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'], 'do': 'npm install' }
-" 		Plug 'MaxMEllon/vim-jsx-pretty'
-" 		let g:vim_jsx_pretty_highlight_close_tag = 1
+"         Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'], 'do': 'npm install' }
+"         Plug 'MaxMEllon/vim-jsx-pretty'
+"         let g:vim_jsx_pretty_highlight_close_tag = 1
 "    " }}}
 " 
 "    " TypeScript {{{
@@ -655,8 +657,8 @@ call plug#end()
         let s:colors = onedark#GetColors()
         autocmd Colorscheme * call onedark#set_highlight("Normal", { "fg": s:colors.white })
         let g:onedark_color_overrides = {
-		\ "cursor_grey" : { "gui": "#2C323C", "cterm": "237", "cterm16": "8" }
-		\ }
+        \ "cursor_grey" : { "gui": "#2C323C", "cterm": "237", "cterm16": "8" }
+        \ }
         if (has("termguicolors"))
             set termguicolors
         endif
