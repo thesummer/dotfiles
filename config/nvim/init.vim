@@ -203,7 +203,7 @@ call plug#begin('~/.config/nvim/plugged')
 
     " clear highlighted search
 "    noremap <space> :set hlsearch! hlsearch?<cr>
-    noremap <leader>f :set hlsearch! hlsearch?<cr>
+    noremap <leader>h :set hlsearch! hlsearch?<cr>
 
 "    " activate spell-checking alternatives
 "    nmap ;s :set invspell spelllang=en<cr>
@@ -457,15 +457,18 @@ call plug#begin('~/.config/nvim/plugged')
 " 
         nmap <silent> <leader>r :Buffers<cr>
         nmap <silent> <leader>e :FZF<cr>
-"        nmap <leader><tab> <plug>(fzf-maps-n)
-"        xmap <leader><tab> <plug>(fzf-maps-x)
-"        omap <leader><tab> <plug>(fzf-maps-o)
+        nmap <leader><tab> <plug>(fzf-maps-n)
+        xmap <leader><tab> <plug>(fzf-maps-x)
+        omap <leader><tab> <plug>(fzf-maps-o)
 " 
 "        " Insert mode completion
         imap <c-x><c-k> <plug>(fzf-complete-word)
         imap <c-x><c-f> <plug>(fzf-complete-path)
         imap <c-x><c-j> <plug>(fzf-complete-file-ag)
         imap <c-x><c-l> <plug>(fzf-complete-line)
+        nmap <leader>f :Rg! <space>
+        nmap <leader>ff :Rg! <c-r><c-w><cr>
+
  
         command! FZFMru call fzf#run({
         \  'source':  v:oldfiles,
