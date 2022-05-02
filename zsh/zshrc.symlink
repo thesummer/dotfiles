@@ -171,10 +171,10 @@ typeset -A plugins
 [ -f $HOME/.fzf.zsh ] && source $HOME/.fzf.zsh
 # export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules}/*" 2> /dev/null'
 if which fd >/dev/null; then 
-  export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+  export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git --exclude .cache'
   export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 else
-  export FZF_DEFAULT_COMMAND="find . -type f -not -path '*/\.git/*'"
+  export FZF_DEFAULT_COMMAND="find . -type f -not -path '*/\.git/*' -not -path '*/\.cache/*'"
   export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 fi
 
