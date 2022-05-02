@@ -148,6 +148,9 @@ call plug#begin('~/.config/nvim/plugged')
             \       'fileformat': 'helpers#lightline#fileFormat',
             \       'filetype': 'helpers#lightline#fileType',
             \       'gitbranch': 'helpers#lightline#gitBranch',
+            \       'cocstatus': 'coc#status',
+            \       'currentfunction': 'helpers#lightline#currentFunction',
+            \       'gitblame': 'helpers#lightline#gitBlame'
             \   } }
 "             \   'component_function': {
 "             \       'fileencoding': 'helpers#lightline#fileEncoding',
@@ -190,8 +193,8 @@ call plug#begin('~/.config/nvim/plugged')
     " shortcut to save
     nmap <leader>s :w<cr>
 
-    " Close current buffer
-    nmap <leader>q :bd<cr>
+    " Close current buffer without closing window
+    nmap <leader>q :b#\|bd #<cr>
 
     " set paste toggle
     set pastetoggle=<leader>v
@@ -307,7 +310,7 @@ call plug#begin('~/.config/nvim/plugged')
 
 
     " easy commenting motions
-"    Plug 'tpope/vim-commentary'
+    Plug 'tpope/vim-commentary'
 
     " mappings which are simply short normal mode aliases for commonly used ex commands
     Plug 'tpope/vim-unimpaired'
@@ -417,9 +420,9 @@ call plug#begin('~/.config/nvim/plugged')
             endif
          endfunction
        " toggle nerd tree
-        nmap <silent> <leader>n :call ToggleNerdTree()<cr>
+"        nmap <silent> <leader>n :call ToggleNerdTree()<cr>
         " find the current file in nerdtree without needing to reload the drawer
-        nmap <silent> <leader>y :NERDTreeFind<cr>
+"        nmap <silent> <leader>y :NERDTreeFind<cr>
 
         let NERDTreeShowHidden=1
         let NERDTreeAutoDeleteBuffer=1
@@ -487,10 +490,10 @@ call plug#begin('~/.config/nvim/plugged')
 " 
 "    " vim-fugitive {{{
         Plug 'tpope/vim-fugitive'
-        nmap <silent> <leader>gs :Gstatus<cr>
+        nmap <silent> <leader>gs :Git<cr>
 "        nmap <leader>ge :Gedit<cr>
 "        nmap <silent><leader>gr :Gread<cr>
-        nmap <silent><leader>gb :Gblame<cr>
+        nmap <silent><leader>gb :Git blame<cr>
 " 
 "        Plug 'tpope/vim-rhubarb' " hub extension for fugitive
 "        Plug 'sodapopcan/vim-twiggy'
@@ -504,30 +507,26 @@ call plug#begin('~/.config/nvim/plugged')
 "        let g:UltiSnipsJumpBackwardTrigger="<C-k>"
 "    " }}}
 " 
-"    " coc {{{
-"        Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
-" 
-"        let g:coc_global_extensions = [
-"        \ 'coc-css',
+    " coc {{{
+        Plug 'neoclide/coc.nvim', {'branch' : 'release'}
+ 
+        let g:coc_global_extensions = [
+        \ 'coc-clangd',
+        \ 'coc-git',
+        \ 'coc-sh',
+        \ 'coc-explorer'
+        \ ]
 "        \ 'coc-json',
 "        \ 'coc-tsserver',
-"        \ 'coc-git',
 "        \ 'coc-eslint',
 "        \ 'coc-tslint-plugin',
 "        \ 'coc-pairs',
-"        \ 'coc-sh',
 "        \ 'coc-vimlsp',
 "        \ 'coc-emmet',
-"        \ 'coc-prettier',
 "        \ 'coc-ultisnips',
-"        \ 'coc-explorer'
 "        \ ]
 " 
-"        autocmd CursorHold * silent call CocActionAsync('highlight')
-" 
-"        " coc-prettier
-"        command! -nargs=0 Prettier :CocCommand prettier.formatFile
-"        nmap <leader>f :CocCommand prettier.formatFile<cr>
+        autocmd CursorHold * silent call CocActionAsync('highlight')
 " 
 "        " coc-git
 "        nmap [g <Plug>(coc-git-prevchunk)
@@ -535,14 +534,15 @@ call plug#begin('~/.config/nvim/plugged')
 "        nmap gs <Plug>(coc-git-chunkinfo)
 "        nmap gu :CocCommand git.chunkUndo<cr>
 " 
-"        nmap <silent> <leader>k :CocCommand explorer<cr>
+        nmap <silent> <leader>n :CocCommand explorer<cr>
 " 
-"        "remap keys for gotos
-"        nmap <silent> gd <Plug>(coc-definition)
-"        nmap <silent> gy <Plug>(coc-type-definition)
-"        nmap <silent> gi <Plug>(coc-implementation)
-"        nmap <silent> gr <Plug>(coc-references)
-"        nmap <silent> gh <Plug>(coc-doHover)
+        "remap keys for gotos
+        nmap <silent> gd <Plug>(coc-definition)
+        nmap <silent> gy <Plug>(coc-type-definition)
+        nmap <silent> gi <Plug>(coc-implementation)
+        nmap <silent> gr <Plug>(coc-references)
+        nmap <silent> gh <Plug>(coc-doHover)
+        nmap <silent> gj :CocCommand clangd.switchSourceHeader<cr>
 " 
 "        " diagnostics navigation
 "        nmap <silent> [c <Plug>(coc-diagnostic-prev)
@@ -550,10 +550,6 @@ call plug#begin('~/.config/nvim/plugged')
 " 
 "        " rename
 "        nmap <silent> <leader>rn <Plug>(coc-rename)
-" 
-"        " Remap for format selected region
-"        xmap <leader>f  <Plug>(coc-format-selected)
-"        nmap <leader>f  <Plug>(coc-format-selected)
 " 
 "        " organize imports
 "        command! -nargs=0 OR :call CocAction('runCommand', 'editor.action.organizeImport')
@@ -584,64 +580,17 @@ call plug#begin('~/.config/nvim/plugged')
 "  }}}
 " 
 "  Language-Specific Configuration {{{
-"    " html / templates {{{
-"        " emmet support for vim - easily create markdup wth CSS-like syntax
-"        Plug 'mattn/emmet-vim'
-" 
-"        " match tags in html, similar to paren support
-"        Plug 'gregsexton/MatchTag', { 'for': 'html' }
-" 
-"        " html5 support
-"        Plug 'othree/html5.vim', { 'for': 'html' }
-" 
-"        " mustache support
-"        Plug 'mustache/vim-mustache-handlebars'
-" 
-"        " pug / jade support
-"        Plug 'digitaltoad/vim-pug', { 'for': ['jade', 'pug'] }
-" 
-"         " nunjucks support
-"        Plug 'niftylettuce/vim-jinja', { 'for': 'njk' }
-"    " }}}
-" 
-"    " JavaScript {{{
-"        Plug 'othree/yajs.vim', { 'for': [ 'javascript', 'javascript.jsx', 'html' ] }
-"        " Plug 'pangloss/vim-javascript', { 'for': ['javascript', 'javascript.jsx', 'html'] }
-"        Plug 'moll/vim-node', { 'for': 'javascript' }
-"         Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'], 'do': 'npm install' }
-"         Plug 'MaxMEllon/vim-jsx-pretty'
-"         let g:vim_jsx_pretty_highlight_close_tag = 1
-"    " }}}
-" 
-"    " TypeScript {{{
-"        Plug 'leafgarland/typescript-vim', { 'for': ['typescript', 'typescript.tsx'] }
-"        " Plug 'Shougo/vimproc.vim', { 'do': 'make' } TODO what still needs this?
-"    " }}}
-" 
-" 
-"    " Styles {{{
-"        Plug 'wavded/vim-stylus', { 'for': ['stylus', 'markdown'] }
-"        Plug 'groenewege/vim-less', { 'for': 'less' }
-"        Plug 'hail2u/vim-css3-syntax', { 'for': 'css' }
-"        Plug 'cakebaker/scss-syntax.vim', { 'for': 'scss' }
-"        Plug 'stephenway/postcss.vim', { 'for': 'css' }
-"    " }}}
-" 
-"    " markdown {{{
-"        Plug 'tpope/vim-markdown', { 'for': 'markdown' }
-"        let g:markdown_fenced_languages = [ 'tsx=typescript.tsx' ]
-" 
-"        " Open markdown files in Marked.app - mapped to <leader>m
-"        Plug 'itspriddle/vim-marked', { 'for': 'markdown', 'on': 'MarkedOpen' }
-"        nmap <leader>m :MarkedOpen!<cr>
-"        nmap <leader>mq :MarkedQuit<cr>
-"        nmap <leader>* *<c-o>:%s///gn<cr>
-"    " }}}
-" 
-"    " JSON {{{
-"        Plug 'elzr/vim-json', { 'for': 'json' }
-"        let g:vim_json_syntax_conceal = 0
-"    " }}}
+     " C++
+     Plug 'rhysd/vim-clang-format'
+     let g:clang_format#detect_style_file=1
+     let g:clang_format#auto_format=1
+     let g:clang_format#auto_format_on_insert_leave=0
+     let g:clang_format#enable_fallback_style=0
+     
+     map <leader>c :ClangFormat<cr>
+
+"    " nunjucks support
+"    Plug 'niftylettuce/vim-jinja', { 'for': 'njk' }
 " 
 "    Plug 'ekalinin/Dockerfile.vim'
 "  }}}
