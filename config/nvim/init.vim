@@ -184,6 +184,12 @@ call plug#begin('~/.config/nvim/plugged')
     inoremap jk <esc>
     inoremap kj <esc>
 
+    " do not jump when searching with *
+    nnoremap * *N
+    " Expand %% to directory of current buffer (see
+    " http://vimcasts.org/episodes/the-edit-command/)
+    cnoremap <expr> %% getcmdtype() == ":" ? expand('%:h').'/' : '%%'
+
     map <C-h> <C-w>h
     map <C-j> <C-w>j
     map <C-k> <C-w>k
@@ -321,7 +327,7 @@ call plug#begin('~/.config/nvim/plugged')
 "    Plug 'tpope/vim-ragtag'
 
     " mappings to easily delete, change and add such surroundings in pairs, such as quotes, parens, etc.
-"    Plug 'tpope/vim-surround'
+    Plug 'tpope/vim-surround'
 
     " tmux integration for vim
 "    Plug 'benmills/vimux'
