@@ -323,6 +323,12 @@ call plug#begin('~/.config/nvim/plugged')
 
     " Allow diffing entire directories
     Plug 'will133/vim-dirdiff'
+
+    " Make star search more powerful and avoid jumps
+    Plug 'haya14busa/vim-asterisk'
+    map *   <Plug>(asterisk-z*)
+    let g:asterisk#keeppos = 1
+
     " endings for html, xml, etc. - ehances surround
 "    Plug 'tpope/vim-ragtag'
 
