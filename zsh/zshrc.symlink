@@ -42,6 +42,7 @@ prepend_path $DOTFILES/bin
 prepend_path $HOME/bin
 prepend_path $HOME/.local/bin
 prepend_path $HOME/software/bin/bin
+prepend_path $HOME/.cargo/bin
 
 # display how long all tasks over 10 seconds take
 export REPORTTIME=10
@@ -249,5 +250,10 @@ alias tls='tmux ls'
 alias tat='tmux attach -t'
 alias tns='tmux new-session -s'
 alias modav='module av 2>&1 | less'  
+alias nvim-kickstart='NVIM_APPNAME="nvim-kickstart" nvim'
 # fnm
 # eval "$(fnm env --multi)"
+
+# Select Python version
+alias python='python3.9'
+alias python3='python3.9'

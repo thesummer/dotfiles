@@ -432,7 +432,7 @@ call plug#begin('~/.config/nvim/plugged')
             endif
          endfunction
        " toggle nerd tree
-"        nmap <silent> <leader>n :call ToggleNerdTree()<cr>
+        nmap <silent> <leader>n :call ToggleNerdTree()<cr>
         " find the current file in nerdtree without needing to reload the drawer
 "        nmap <silent> <leader>y :NERDTreeFind<cr>
 
@@ -546,7 +546,7 @@ call plug#begin('~/.config/nvim/plugged')
 "        nmap gs <Plug>(coc-git-chunkinfo)
 "        nmap gu :CocCommand git.chunkUndo<cr>
 " 
-        nmap <silent> <leader>n :CocCommand explorer<cr>
+        " nmap <silent> <leader>n :CocCommand explorer<cr>
 " 
         "remap keys for gotos
         nmap <silent> gd <Plug>(coc-definition)
