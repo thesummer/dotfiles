@@ -88,13 +88,16 @@ bindkey "${key[Down]}" down-line-or-local-history
 setopt COMPLETE_ALIASES
 
 # make terminal command navigation sane again
-set -o emacs
+set -o vi
 # Putty
 if  [[ $TERM == "xterm"* ]]; then
-    bindkey "^[OC" forward-word                      # [Ctrl-right] - forward one word
-    bindkey "^[OD" backward-word                     # [Ctrl-left] - backward one word
-    bindkey "^[^[[D" beginning-of-line                  # [Alt-left] - beginning of line
-    bindkey "^[^[[C"  end-of-line                       # [Alt-right] - end of line
+    bindkey "^[OC" forward-char                      # [right] - forward one char
+    bindkey "^[OD" backward-char                     # [left] - backward one char
+    bindkey $'\x1b[1;5D' backward-word               # [Ctrl-left] - backward one word
+    bindkey $'\x1b[1;5C' forward-word                # [Ctrl-right] - forward one word
+
+    bindkey $'\x1b[H' beginning-of-line              # [Alt-left] - beginning of line
+    bindkey $'\x1b[F' end-of-line                       # [Alt-right] - end of line
 else
 # Putty+tmux compatibility
     bindkey "^[[1;5C" forward-word                      # [Ctrl-right] - forward one word
@@ -253,7 +256,3 @@ alias modav='module av 2>&1 | less'
 alias nvim-kickstart='NVIM_APPNAME="nvim-kickstart" nvim'
 # fnm
 # eval "$(fnm env --multi)"
-
-# Select Python version
-alias python='python3.9'
-alias python3='python3.9'
