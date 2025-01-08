@@ -384,12 +384,18 @@ require("lazy").setup({
             require("which-key").setup()
 
             -- Document existing key chains
-            require("which-key").register({
-                ["<leader>c"] = { name = "[C]ode", _ = "which_key_ignore" },
-                ["<leader>d"] = { name = "[D]ocument", _ = "which_key_ignore" },
-                ["<leader>r"] = { name = "[R]ename", _ = "which_key_ignore" },
-                ["<leader>s"] = { name = "[S]earch", _ = "which_key_ignore" },
-                ["<leader>w"] = { name = "[W]orkspace", _ = "which_key_ignore" },
+            require("which-key").add({
+
+                { "<leader>c", group = "[C]ode" },
+                { "<leader>c_", hidden = true },
+                { "<leader>d", group = "[D]ocument" },
+                { "<leader>d_", hidden = true },
+                { "<leader>r", group = "[R]ename" },
+                { "<leader>r_", hidden = true },
+                { "<leader>s", group = "[S]earch" },
+                { "<leader>s_", hidden = true },
+                { "<leader>w", group = "[W]orkspace" },
+                { "<leader>w_", hidden = true },
             })
         end,
     },
@@ -773,6 +779,10 @@ require("lazy").setup({
                             -- diagnostics = { disable = { 'missing-fields' } },
                         },
                     },
+                    bacon = {
+                        enabled = diagnostics == "bacon-ls",
+                    },
+                    rust_analyzer = { enabled = false },
                 },
             }
 
@@ -789,6 +799,8 @@ require("lazy").setup({
             local ensure_installed = vim.tbl_keys(servers or {})
             vim.list_extend(ensure_installed, {
                 "stylua", -- Used to format lua code
+                "bacon", -- Analyzer for Rust
+                "rust-analyzer",
             })
             require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
@@ -804,6 +816,102 @@ require("lazy").setup({
                     end,
                 },
             })
+        end,
+    },
+
+    { -- Rust crates LSP
+        "Saecki/crates.nvim",
+        event = { "BufRead Cargo.toml" },
+        opts = {
+            completion = {
+                crates = {
+                    enabled = true,
+                },
+            },
+            lsp = {
+                enabled = true,
+                actions = true,
+                completion = true,
+                hover = true,
+            },
+        },
+    },
+
+    {
+        "mrcjkb/rustaceanvim",
+        version = vim.fn.has("nvim-0.10.0") == 0 and "^4" or false,
+        ft = { "rust" },
+        opts = {
+            server = {
+                on_attach = function(_, bufnr)
+                    vim.keymap.set("n", "<leader>cR", function()
+                        vim.cmd.RustLsp("codeAction")
+                    end, { desc = "Code Action", buffer = bufnr })
+                    vim.keymap.set("n", "<leader>dr", function()
+                        vim.cmd.RustLsp("debuggables")
+                    end, { desc = "Rust Debuggables", buffer = bufnr })
+                end,
+                default_settings = {
+                    -- rust-analyzer language server configuration
+                    ["rust-analyzer"] = {
+                        cargo = {
+                            allFeatures = true,
+                            loadOutDirsFromCheck = true,
+                            buildScripts = {
+                                enable = true,
+                            },
+                        },
+                        -- Add clippy lints for Rust if using rust-analyzer
+                        checkOnSave = diagnostics == "rust-analyzer",
+                        -- Enable diagnostics if using rust-analyzer
+                        diagnostics = {
+                            enable = diagnostics == "rust-analyzer",
+                        },
+                        procMacro = {
+                            enable = true,
+                            ignored = {
+                                ["async-trait"] = { "async_trait" },
+                                ["napi-derive"] = { "napi" },
+                                ["async-recursion"] = { "async_recursion" },
+                            },
+                        },
+                        files = {
+                            excludeDirs = {
+                                ".direnv",
+                                ".git",
+                                ".github",
+                                ".gitlab",
+                                "bin",
+                                "node_modules",
+                                "target",
+                                "venv",
+                                ".venv",
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        config = function(_, opts)
+            -- if LazyVim.has("mason.nvim") then
+            -- local package_path = require("mason-registry").get_package("codelldb"):get_install_path()
+            -- local codelldb = package_path .. "/extension/adapter/codelldb"
+            -- local library_path = package_path .. "/extension/lldb/lib/liblldb.dylib"
+            -- local uname = io.popen("uname"):read("*l")
+            -- if uname == "Linux" then
+            -- library_path = package_path .. "/extension/lldb/lib/liblldb.so"
+            -- end
+            -- opts.dap = {
+            -- adapter = require("rustaceanvim.config").get_codelldb_adapter(codelldb, library_path),
+            -- }
+            -- end
+            vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
+            if vim.fn.executable("rust-analyzer") == 0 then
+                LazyVim.error(
+                    "**rust-analyzer** not found in PATH, please install it.\nhttps://rust-analyzer.github.io/",
+                    { title = "rustaceanvim" }
+                )
+            end
         end,
     },
 
@@ -861,6 +969,7 @@ require("lazy").setup({
                 formatters_by_ft = {
                     lua = { "stylua" },
                     cpp = { "clang_format" },
+                    rust = { "rustfmt" },
                     -- Conform can also run multiple formatters sequentially
                     -- python = { "isort", "black" },
                     --
@@ -1033,7 +1142,7 @@ require("lazy").setup({
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
         opts = {
-            ensure_installed = { "bash", "c", "html", "lua", "markdown", "vim", "vimdoc" },
+            ensure_installed = { "bash", "c", "html", "lua", "markdown", "rust", "ron", "vim", "vimdoc" },
             -- Autoinstall languages that are not installed
             auto_install = true,
             highlight = { enable = true },
