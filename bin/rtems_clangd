@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Check if path argument is provided
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <path-to-conanfile>" >&2
+  echo "Example: $0 /path/to/contrib/conan/rtems" >&2
+  exit 1
+fi
+
+# Get the conan file path from argument
+CONAN_FILE_PATH="$1"
+
+# Verify the path exists
+if [ ! -e "$CONAN_FILE_PATH" ]; then
+  echo "Error: Path $CONAN_FILE_PATH does not exist" >&2
+  exit 1
+fi
+
+echo "Using conan file at: $CONAN_FILE_PATH"
+
+# Get the compiler path from conan
+COMPILER_PATH=$(conan info "$CONAN_FILE_PATH" --paths -pr:b default | grep "rtems5-gcc" | grep "package_folder" | cut -d: -f2 | xargs)
+
+if [ -z "$COMPILER_PATH" ]; then
+  echo "Error: Could not find rtems5-gcc package folder in conan info" >&2
+  exit 1
+fi
+
+# Find g++ compiler in bin directory and derive prefix
+COMPILER_BIN=""
+COMPILER_PREFIX=""
+
+for compiler in "${COMPILER_PATH}/bin/"*-g++; do
+  if [ -f "$compiler" ]; then
+    COMPILER_BIN="$compiler"
+    # Extract prefix by removing -g++ suffix
+    COMPILER_PREFIX=$(basename "$compiler" | sed 's/-g++$//')
+    break
+  fi
+done
+
+if [ -z "$COMPILER_BIN" ]; then
+  echo "Error: No g++ compiler found in ${COMPILER_PATH}/bin/" >&2
+  exit 1
+fi
+
+echo "Found compiler: $COMPILER_BIN"
+echo "Derived prefix: $COMPILER_PREFIX"
+
+# Get include paths using the derived prefix
+GCC_VERSION=$(${COMPILER_BIN} -dumpversion)
+GCC_INCLUDE="${COMPILER_PATH}/lib/gcc/${COMPILER_PREFIX}/${GCC_VERSION}/include"
+RTEMS_INCLUDE="${COMPILER_PATH}/${COMPILER_PREFIX}/include"
+
+# Generate .clangd
+cat >.clangd <<EOF
+CompileFlags:
+  # ${COMPILER_PREFIX} (clangd does not understand what rtems is)
+  Compiler: ${COMPILER_BIN}
+  Add:
+    - -I${GCC_INCLUDE}
+    - -I${GCC_INCLUDE}/c++
+    - -I${GCC_INCLUDE}/c++/${COMPILER_PREFIX}
+    - -I${RTEMS_INCLUDE}
+  Remove:
+    - -qrtems
+EOF
+
+echo "Generated .clangd with compiler at: ${COMPILER_BIN}"
