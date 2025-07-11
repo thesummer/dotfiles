@@ -1,0 +1,20 @@
+-- Keymaps are automatically loaded on the VeryLazy event
+-- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
+-- Add any additional keymaps here
+--
+-- Git related keymaps
+-- vim.keymap.set("n", "<leader>gs", ":Git<cr>", { silent = true, desc = "Fugitive git status" })
+-- vim.api.nvim_set_keymap("n", "<leader>gs", ":Git<cr>", { noremap = false, silent = true, desc = "Fugitive git status" })
+-- vim.keymap.set("n", "<leader>gs", ":Git<cr>", { silent = true, desc = "Fugitive git status" })
+vim.keymap.set("n", "<leader>gs", ":Neogit<cr>", { silent = true, desc = "Neogit git status" })
+vim.keymap.set("n", "<leader>gb", "<leader>ghb<cr>", { silent = true, desc = "Git blame current file" })
+vim.keymap.set("n", "<leader>fd", "<leader>/<C-r><C-w><cr>", { silent = true, desc = "Search word under cursor" })
+vim.keymap.set("n", "<leader>gb", function()
+  require("gitsigns").blame()
+end, { silent = true, desc = "Git blame current file" })
+vim.keymap.set("n", "<leader>fd", function()
+  Snacks.picker.grep_word()
+end, { silent = true, desc = "Search for word under cursor in project" })
+-- vim.keymap.set("n", "<leader>gb", ":Git blame<cr>", { silent = true, desc = "Git blame current file" })
+vim.keymap.set("n", "<leader>gp", ":Neogit pull<cr>", { silent = true, desc = "Git pull" })
+vim.keymap.set("n", "<leader>gP", ":Neogit push<cr>", { silent = true, desc = "Git push" })

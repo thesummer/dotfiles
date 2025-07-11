@@ -1,6 +1,19 @@
--- lua/plugins/lsp.lua
--- LSP plugin loader that imports the LSP configuration from the lsp/ directory
-
--- We simply return the LSP configuration from the lsp/init.lua module
--- This bridges your lsp/ modules with the plugin system
-return require("lsp")
+return {
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        clangd = {
+          cmd = {
+            "clangd",
+            "--enable-config",
+            "--query-driver=**/sparc-gaisler-rtems5-*",
+            "--query-driver=**/sparc-rtems5-*",
+            "--query-driver=**/arm-rtems5-*",
+            "--query-driver=**/arm-xilinx-linux-gnueabi-*",
+          },
+        },
+      },
+    },
+  },
+}
