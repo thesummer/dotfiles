@@ -18,3 +18,13 @@ end, { silent = true, desc = "Search for word under cursor in project" })
 -- vim.keymap.set("n", "<leader>gb", ":Git blame<cr>", { silent = true, desc = "Git blame current file" })
 vim.keymap.set("n", "<leader>gp", ":Neogit pull<cr>", { silent = true, desc = "Git pull" })
 vim.keymap.set("n", "<leader>gP", ":Neogit push<cr>", { silent = true, desc = "Git push" })
+-- Delete keymaps which open terminals in vim
+-- NOTE: Some terminals interpret C-/ as C--, so cover both cases
+vim.keymap.del("n", "<C-/>")
+vim.keymap.del("n", "<C-_>")
+vim.keymap.del("t", "<C-/>")
+vim.keymap.del("t", "<C-_>")
+-- Set up more convenient splits
+-- NOTE: Some terminals interpret C-/ as C--, so cover both cases
+vim.keymap.set("n", "<C-/>", ":vsplit<cr>", { silent = true, desc = "Spit window right" })
+vim.keymap.set("n", "<C-_>", ":vsplit<cr>", { silent = true, desc = "Spit window right" })
