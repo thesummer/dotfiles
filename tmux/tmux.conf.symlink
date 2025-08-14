@@ -3,14 +3,13 @@ set-option -g default-shell /bin/zsh
  
 # tmux display things in 256 colors
 # set -g default-terminal "tmux-256color"
-set -g default-terminal "screen-256color"
-set -as terminal-overrides ',xterm*:Tc:sitm=\E[3m'
+# Set terminal to use 24 bit color
+set -as terminal-overrides ',xterm*:Tc'
+#set -as terminal-overrides ',xterm*:Tc:sitm=\E[3m'
 # Some magic to make tmux recognize Ctrl+arrow from Putty
-set -g terminal-overrides "xterm*:kLFT5=\eOD:kRIT5=\eOC:kUP5=\eOA:kDN5=\eOB:smkx@:rmkx@"
+# set -g terminal-overrides "xterm*:kLFT5=\eOD:kRIT5=\eOC:kUP5=\eOA:kDN5=\eOB:smkx@:rmkx@"
 #? set -ga terminal-overrides ",*256col*:Tc"
  
-set -g history-limit 20000
-
 # automatically renumber tmux windows
 set -g renumber-windows on
 
@@ -76,11 +75,11 @@ bind -r l select-pane -R
 bind -r C-h select-window -t :-
 bind -r C-l select-window -t :+
 
-# Resize pane shortcuts
-bind -r H resize-pane -L 10
-bind -r J resize-pane -D 10
-bind -r K resize-pane -U 10
-bind -r L resize-pane -R 10
+# resize pane shortcuts
+bind -r h resize-pane -l 10
+bind -r j resize-pane -d 10
+bind -r k resize-pane -u 10
+bind -r l resize-pane -r 10
 bind -r m resize-pane -Z
 
 # enable mouse support for switching panes/windows
@@ -89,22 +88,19 @@ setw -g mouse on
 # set vi mode for copy mode
 setw -g mode-keys vi
 # more settings to make copy-mode more vim-like
-unbind [
-bind Escape copy-mode
-unbind p
+# unbind [
+# bind Escape copy-mode
+# unbind p
 bind p paste-buffer
-bind -Tcopy-mode-vi 'v' send -X begin-selection
-bind -Tcopy-mode-vi 'y' send -X copy-pipe-and-cancel "tmux save-buffer - | reattach-to-user-namespace pbcopy"
-
-# Buffers to/from Mac clipboard, yay tmux book from pragprog
-bind C-c run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
-bind C-v run "tmux set-buffer $(reattach-to-user-namespace pbpaste); tmux paste-buffer"
+bind -T copy-mode-vi 'v' send-keys -X begin-selection
+bind -T copy-mode-vi 'C-v' send-keys -X rectangle-toggle
+bind -T copy-mode-vi 'y' send-keys -X copy-selection-and-cancel
 
 ##############################
 ### Color & Style Settings ###
 ##############################
 
-source ~/.dotfiles/tmux/base16.sh
+# source ~/.dotfiles/tmux/base16.sh
 # source ~/.dotfiles/tmux/theme.sh
 
 ##############################
@@ -113,11 +109,12 @@ source ~/.dotfiles/tmux/base16.sh
 
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'tmux-plugins/tmux-resurrect'
-set -g @plugin 'tmux-plugins/tmux-continuum'
-# set -g @plugin 'tmux-plugins/tmux-copycat'
-set -g @plugin 'abhinav/tmux-fastcopy'
+set -g @plugin 'christoomey/vim-tmux-navigator'
+set -g @plugin 'dreamsofcode-io/catppuccin-tmux'
 set -g @plugin 'tmux-plugins/tmux-yank'
+# set -g @plugin 'tmux-plugins/tmux-resurrect'
+# set -g @plugin 'tmux-plugins/tmux-continuum'
+# set -g @plugin 'tmux-plugins/tmux-copycat'
 
 # Other examples:
 # set -g @plugin 'github_username/plugin_name'

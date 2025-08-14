@@ -48,4 +48,37 @@ return {
       },
     },
   },
+  {
+    "christoomey/vim-tmux-navigator",
+    cmd = {
+      "TmuxNavigateLeft",
+      "TmuxNavigateDown",
+      "TmuxNavigateUp",
+      "TmuxNavigateRight",
+      "TmuxNavigatePrevious",
+      "TmuxNavigatorProcessList",
+    },
+    keys = {
+      { "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
+      { "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
+      { "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
+      { "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+      { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+    },
+    {
+      "saghen/blink.cmp",
+      opts = function(_, opts)
+        -- Set up autocmd to disable completion in dap-repl
+        vim.api.nvim_create_autocmd("FileType", {
+          pattern = "dap-repl",
+          callback = function()
+            vim.b.completion = false
+          end,
+          desc = "Disable completion in dap-repl",
+        })
+
+        return opts
+      end,
+    },
+  },
 }
