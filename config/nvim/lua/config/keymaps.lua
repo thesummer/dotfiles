@@ -28,3 +28,17 @@ vim.keymap.del("t", "<C-_>")
 -- NOTE: Some terminals interpret C-/ as C--, so cover both cases
 vim.keymap.set("n", "<C-/>", ":vsplit<cr>", { silent = true, desc = "Spit window right" })
 vim.keymap.set("n", "<C-_>", ":vsplit<cr>", { silent = true, desc = "Spit window right" })
+
+vim.keymap.set("n", "<leader>r", function()
+  local root = LazyVim.root()
+  print("LazyVim.root() found: " .. root)
+  print("Git root: " .. vim.fn.system("git rev-parse --show-toplevel"):gsub("\n", ""))
+  print("Current file dir: " .. vim.fn.expand("%:p:h"))
+  print("Vim cwd: " .. vim.fn.getcwd())
+end)
+
+vim.keymap.set("n", "<leader>d", function()
+  local root = LazyVim.root()
+  print("About to call Snacks.explorer with cwd: " .. root)
+  Snacks.explorer({ cwd = root })
+end, { desc = "Debug explorer" })
