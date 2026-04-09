@@ -9,7 +9,12 @@ set -as terminal-overrides ',xterm*:Tc'
 # Some magic to make tmux recognize Ctrl+arrow from Putty
 # set -g terminal-overrides "xterm*:kLFT5=\eOD:kRIT5=\eOC:kUP5=\eOA:kDN5=\eOB:smkx@:rmkx@"
 #? set -ga terminal-overrides ",*256col*:Tc"
- 
+
+# Share clipboard with e.g. Windows Terminal via SSH
+set -s set-clipboard on
+set -g allow-passthrough on
+set -ag terminal-overrides "vte*:XT:Ms=\\E]52;c;%p2%s\\7,xterm*:XT:Ms=\\E]52;c;%p2%s\\7"
+
 # automatically renumber tmux windows
 set -g renumber-windows on
 
