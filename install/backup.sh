@@ -2,7 +2,10 @@
 
 # Backup files that are provided by the dotfiles into a ~/dotfiles-backup directory
 
-DOTFILES=$HOME/.dotfiles
+# Resolve the repo root from this script's location (install/ -> repo root),
+# unless the caller already exported REPO_DIR. Do not hardcode ~/.dotfiles.
+: "${REPO_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+DOTFILES="$REPO_DIR"
 BACKUP_DIR=$HOME/dotfiles-backup
 
 set -e # Exit immediately if a command exits with a non-zero status.

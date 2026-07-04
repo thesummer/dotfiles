@@ -1,13 +1,8 @@
-# Setup fzf
-# ---------
-if [[ ! "$PATH" == *$HOME/.dotfiles/contrib/fzf/bin* ]]; then
-  export PATH="${PATH:+${PATH}:}$HOME/.dotfiles/contrib/fzf/bin"
+# fzf shell integration (zsh)
+# ---------------------------
+# fzf >= 0.48 ships its shell integration inside the binary, so there is no
+# submodule or checkout to source. Guard on availability: this file is a no-op
+# when fzf is not installed.
+if command -v fzf >/dev/null 2>&1; then
+  source <(fzf --zsh)
 fi
-
-# Auto-completion
-# ---------------
-[[ $- == *i* ]] && source "$HOME/.dotfiles/contrib/fzf/shell/completion.zsh" 2> /dev/null
-
-# Key bindings
-# ------------
-source "$HOME/.dotfiles/contrib/fzf/shell/key-bindings.zsh"

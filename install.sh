@@ -1,42 +1,50 @@
 #!/usr/bin/env bash
+#
+# Non-interactive dotfiles bootstrap.
+#
+# Designed to run unattended in a bash-only x86_64 container (e.g. via DevPod's
+# `--dotfiles` flag): it asks no questions, needs no sudo/root, and installs all
+# custom binaries under ~/.local/bin. Safe to re-run.
 
-command_exists() {
-    type "$1" > /dev/null 2>&1
-}
+set -uo pipefail
 
-echo "Installing dotfiles."
+# Resolve the repo root from this script's own location. Do NOT assume the repo
+# lives at ~/.dotfiles; DevPod may clone it anywhere.
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export REPO_DIR
 
-source install/link.sh
+echo "Installing dotfiles from $REPO_DIR"
 
-# source install/git.sh
+# Create a canonical ~/.dotfiles symlink so runtime config that references
+# $HOME/.dotfiles (e.g. zshenv) keeps working regardless of clone location.
+canonical="$HOME/.dotfiles"
+repo_real="$(cd "$REPO_DIR" && pwd -P)"
+if [ -e "$canonical" ] || [ -L "$canonical" ]; then
+    existing_real="$(cd "$canonical" 2>/dev/null && pwd -P || true)"
+    if [ "$existing_real" = "$repo_real" ]; then
+        echo "$canonical already resolves to this repo; leaving it as is."
+    else
+        echo "warning: $canonical already exists and does not point to $REPO_DIR."
+        echo "         leaving it untouched; runtime \$DOTFILES will use the existing target."
+    fi
+else
+    echo "Linking $canonical -> $REPO_DIR"
+    ln -s "$REPO_DIR" "$canonical"
+fi
 
-# echo "creating vim directories"
- mkdir -p ~/.vim-tmp
+echo "Creating vim temp directory"
+mkdir -p "$HOME/.vim-tmp"
 
- if ! command_exists zsh; then
-    echo "zsh not found. Please install and then re-run installation scripts"
+# Symlink *.symlink files and config/ entries into $HOME.
+bash "$REPO_DIR/install/link.sh"
+
+# Interactive git identity setup is intentionally left disabled (no questions).
+# bash "$REPO_DIR/install/git.sh"
+
+# Install neovim / ripgrep / fzf / zsh into ~/.local/bin.
+if ! bash "$REPO_DIR/install/tools.sh"; then
+    echo "error: tool installation failed" >&2
     exit 1
-elif ! [[ $SHELL =~ .*zsh.* ]]; then
-    echo "Configuring zsh as default shell"
-    chsh -s "$(command -v zsh)"
 fi
 
-# Change the default shell to zsh
-zsh_path="$( command -v zsh )"
-if ! grep "$zsh_path" /etc/shells; then
-    echo "adding $zsh_path to /etc/shells"
-    echo "$zsh_path" | sudo tee -a /etc/shells
-fi
-
-if [[ "$SHELL" != "$zsh_path" ]]; then
-    chsh -s "$zsh_path"
-    echo "default shell changed to $zsh_path"
-fi
-
-# Configure fzf
-echo "Configuring fzf"
-git submodule update --init
-contrib/fzf/install
-
-
-echo "Done. Reload your terminal."
+echo "Done. This did not change your login shell; start zsh manually with: zsh"

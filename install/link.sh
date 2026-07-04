@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-DOTFILES=$HOME/.dotfiles
+# Resolve the repo root from this script's location (install/ -> repo root),
+# unless the caller already exported REPO_DIR. Do not hardcode ~/.dotfiles.
+: "${REPO_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+DOTFILES="$REPO_DIR"
 
 echo -e "\\nCreating symlinks"
 echo "=============================="
