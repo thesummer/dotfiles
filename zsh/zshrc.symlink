@@ -79,33 +79,40 @@ down-line-or-local-history() {
     zle set-local-history 0
 }
 zle -N down-line-or-local-history
-#
-# Up/Down keys only search through local history
-bindkey "${key[Up]}" up-line-or-local-history
-bindkey "${key[Down]}" down-line-or-local-history
-
 
 setopt COMPLETE_ALIASES
 
 # make terminal command navigation sane again
 set -o vi
-# Putty
-if  [[ $TERM == "xterm"* ]]; then
-    bindkey "^[OC" forward-char                      # [right] - forward one char
-    bindkey "^[OD" backward-char                     # [left] - backward one char
-    bindkey $'\x1b[1;5D' backward-word               # [Ctrl-left] - backward one word
-    bindkey $'\x1b[1;5C' forward-word                # [Ctrl-right] - forward one word
 
-    bindkey $'\x1b[H' beginning-of-line              # [Alt-left] - beginning of line
-    bindkey $'\x1b[F' end-of-line                       # [Alt-right] - end of line
-else
-# Putty+tmux compatibility
-    bindkey "^[[1;5C" forward-word                      # [Ctrl-right] - forward one word
-    bindkey "^[[1;5D" backward-word                     # [Ctrl-left] - backward one word
-	# Doesn't work in tmux  ¯\_(ツ)_/¯
-    bindkey "^[^[[D" beginning-of-line                  # [Alt-left] - beginning of line
-    bindkey "^[^[[C" end-of-line                       # [Alt-right] - end of line
-fi
+# Bind cursor/navigation keys explicitly so they work regardless of $TERM or
+# the terminfo database (e.g. the static zsh inside a devcontainer). Both the
+# normal-mode (CSI: ESC [) and application-mode (SS3: ESC O) forms are bound.
+for _km in viins vicmd; do
+    bindkey -M "$_km" '^[[D' backward-char                # Left
+    bindkey -M "$_km" '^[OD' backward-char
+    bindkey -M "$_km" '^[[C' forward-char                 # Right
+    bindkey -M "$_km" '^[OC' forward-char
+    bindkey -M "$_km" '^[[A' up-line-or-local-history     # Up
+    bindkey -M "$_km" '^[OA' up-line-or-local-history
+    bindkey -M "$_km" '^[[B' down-line-or-local-history   # Down
+    bindkey -M "$_km" '^[OB' down-line-or-local-history
+    bindkey -M "$_km" '^[[H' beginning-of-line            # Home
+    bindkey -M "$_km" '^[OH' beginning-of-line
+    bindkey -M "$_km" '^[[1~' beginning-of-line
+    bindkey -M "$_km" '^[[F' end-of-line                  # End
+    bindkey -M "$_km" '^[OF' end-of-line
+    bindkey -M "$_km" '^[[4~' end-of-line
+    bindkey -M "$_km" '^[[1;5D' backward-word             # Ctrl-Left
+    bindkey -M "$_km" '^[[1;5C' forward-word              # Ctrl-Right
+done
+unset _km
+
+# Insert-mode editing keys
+bindkey -M viins '^[[3~' delete-char                      # Delete (forward)
+bindkey -M viins '^?'    backward-delete-char             # Backspace (DEL 0x7f)
+bindkey -M viins '^H'    backward-delete-char             # Backspace (BS  0x08)
+
 # Other (not yet fully figured out)
 #bindkey '^[^[[C' forward-word                       # [Ctrl-right] - forward one word
 #bindkey '^[^[[D' backward-word                      # [Ctrl-left] - backward one word
@@ -114,15 +121,6 @@ fi
 # bindkey '^[[5D' beginning-of-line                   # [Alt-left] - beginning of line
 # bindkey '^[[5C' end-of-line                         # [Alt-right] - end of line
 # bindkey '^?' backward-delete-char                   # [Backspace] - delete backward
-#
-if [[ "${terminfo[kdch1]}" != "" ]]; then
-    bindkey "${terminfo[kdch1]}" delete-char        # [Delete] - delete forward
-else
-    bindkey "^[[3~" delete-char                     # [Delete] - delete forward
-    bindkey "^[3;5~" delete-char
-    bindkey "\e[3~" delete-char
-fi
-
 # bindkey "^A" vi-beginning-of-line
 # bindkey -M viins "^F" vi-forward-word               # [Ctrl-f] - move to next word
 # bindkey -M viins "^E" vi-add-eol                    # [Ctrl-e] - move to end of line
