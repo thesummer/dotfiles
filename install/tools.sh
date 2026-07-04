@@ -68,6 +68,32 @@ latest_tag() {
     printf '%s\n' "$tag"
 }
 
+# --- resolve the latest Node.js LTS version from nodejs.org ------------------
+# nodejs.org is not GitHub, so the redirect trick above does not apply. The
+# dist index lists every version newest-first with an "lts" column that holds a
+# codename for LTS lines and "-" otherwise; the first LTS-marked row is the
+# current LTS (the same signal nvm/fnm use). Prints e.g. "v22.21.0". Fails
+# loudly if the index cannot be fetched or no LTS row is found.
+node_latest_lts_version() {
+    local url="https://nodejs.org/dist/index.tab" tmp ver
+    tmp="$(mktemp)" || return 1
+    if ! download "$url" "$tmp"; then
+        err "node: could not fetch $url (offline?)"; rm -f "$tmp"; return 1
+    fi
+    # Locate the "lts" column by name (robust to column re-ordering), then print
+    # the version of the first data row whose lts field is set (not "-").
+    ver="$(awk -F'\t' '
+        NR==1 { for (i=1;i<=NF;i++) if ($i=="lts") c=i; next }
+        c && $c!="" && $c!="-" { print $1; exit }
+    ' "$tmp")"
+    rm -f "$tmp"
+    if [ -z "$ver" ]; then
+        err "node: could not determine latest LTS from index.tab"
+        return 1
+    fi
+    printf '%s\n' "$ver"
+}
+
 # --- neovim (neovim/neovim-releases: glibc 2.17, runs old + new hosts) -----
 install_neovim() {
     if have nvim; then
@@ -145,6 +171,40 @@ install_fzf() {
     info "installed fzf ($tag) -> $BIN_DIR/fzf"
 }
 
+# --- Node.js + npm (latest LTS; needed for nvim-treesitter) -----------------
+# npm is not distributed on its own; it ships bundled in the Node.js tarball
+# (node, npm, npx all under bin/). We key the skip check on npm since that is
+# the tool being requested. Uses the standard linux-x64 build, which requires
+# glibc >= 2.28 (fine on Ubuntu 20.04+; would not run on older bases).
+install_node() {
+    if have npm; then
+        info "npm already present ($(command -v npm)); skipping Node.js install"
+        return 0
+    fi
+    info "installing Node.js (latest LTS, bundles npm)"
+    local ver base url tmp dir
+    ver="$(node_latest_lts_version)" || return 1
+    base="node-$ver-linux-x64"
+    url="https://nodejs.org/dist/$ver/$base.tar.gz"   # .tar.gz avoids needing xz
+    tmp="$(mktemp -d)" || return 1
+    if ! download "$url" "$tmp/node.tar.gz" || ! tar -xzf "$tmp/node.tar.gz" -C "$tmp"; then
+        err "node: download/extract failed ($url)"; rm -rf "$tmp"; return 1
+    fi
+    if [ ! -x "$tmp/$base/bin/node" ] || [ ! -e "$tmp/$base/bin/npm" ]; then
+        err "node: unexpected archive layout (no $base/bin/node or npm)"
+        rm -rf "$tmp"; return 1
+    fi
+    dir="$OPT_DIR/$base"
+    rm -rf "$dir"
+    mv "$tmp/$base" "$dir"
+    # Symlink the whole toolchain; npm/npx resolve node via ~/.local/bin on PATH.
+    ln -sf "$dir/bin/node" "$BIN_DIR/node"
+    ln -sf "$dir/bin/npm"  "$BIN_DIR/npm"
+    ln -sf "$dir/bin/npx"  "$BIN_DIR/npx"
+    rm -rf "$tmp"
+    info "installed Node.js ($ver, bundled npm) -> $BIN_DIR/{node,npm,npx}"
+}
+
 # --- zsh (only if absent; romkatv/zsh-bin static zsh 5.8, relocatable) -----
 install_zsh() {
     if have zsh; then
@@ -177,6 +237,7 @@ rc=0
 install_neovim  || rc=1
 install_ripgrep || rc=1
 install_fzf     || rc=1
+install_node    || rc=1
 install_zsh     || rc=1
 
 if [ "$rc" -ne 0 ]; then
