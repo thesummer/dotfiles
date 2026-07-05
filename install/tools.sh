@@ -21,16 +21,46 @@ OPT_DIR="$LOCAL_PREFIX/opt"
 # Make previously-installed tools visible so skip-if-present works even when
 # ~/.local/bin is not yet on PATH (a bash-only base image may not add it).
 case ":$PATH:" in
-    *":$BIN_DIR:"*) ;;
-    *) PATH="$BIN_DIR:$PATH" ;;
+*":$BIN_DIR:"*) ;;
+*) PATH="$BIN_DIR:$PATH" ;;
 esac
 export PATH
 
 mkdir -p "$BIN_DIR" "$OPT_DIR"
 
 info() { printf 'tools.sh: %s\n' "$*"; }
-err()  { printf 'tools.sh: error: %s\n' "$*" >&2; }
+err() { printf 'tools.sh: error: %s\n' "$*" >&2; }
 have() { command -v "$1" >/dev/null 2>&1; }
+
+# --- bootstrap downloader (curl via apt-get if neither curl nor wget) -------
+# Every installer below needs curl or wget. If neither exists, try to install
+# curl with apt-get (available on Debian/Ubuntu-based devcontainer images;
+# apt-get has its own HTTP transport, so no downloader is needed for this).
+# Fails loudly if apt-get is unavailable or the install does not succeed
+# (e.g. not running as root, no network).
+ensure_downloader() {
+    if have curl || have wget; then
+        return 0
+    fi
+    if ! have apt-get; then
+        err "neither curl nor wget found, and apt-get is unavailable to install curl"
+        return 1
+    fi
+    info "neither curl nor wget found; installing curl via apt-get"
+    if ! apt-get update; then
+        err "curl: apt-get update failed"
+        return 1
+    fi
+    if ! DEBIAN_FRONTEND=noninteractive apt-get install -y curl; then
+        err "curl: apt-get install curl failed"
+        return 1
+    fi
+    if ! have curl; then
+        err "curl: not on PATH even after apt-get install succeeded"
+        return 1
+    fi
+    info "installed curl ($(command -v curl))"
+}
 
 # --- download URL -> DEST (curl preferred, wget fallback) ------------------
 download() {
@@ -53,14 +83,14 @@ latest_tag() {
     if have curl; then
         effective="$(curl -fsSLI -o /dev/null -w '%{url_effective}' -- "$url")" || effective=""
     elif have wget; then
-        effective="$(wget -S --max-redirect=10 --spider -- "$url" 2>&1 \
-                     | awk '/^[[:space:]]*Location:/{print $2}' | tail -n1)" || effective=""
+        effective="$(wget -S --max-redirect=10 --spider -- "$url" 2>&1 |
+            awk '/^[[:space:]]*Location:/{print $2}' | tail -n1)" || effective=""
     else
         err "need curl or wget to resolve latest release for $repo"
         return 1
     fi
-    tag="${effective##*/tag/}"     # strip up to and including "/tag/"
-    tag="${tag%%[?#]*}"            # drop any query/fragment
+    tag="${effective##*/tag/}" # strip up to and including "/tag/"
+    tag="${tag%%[?#]*}"        # drop any query/fragment
     if [ -z "$tag" ] || [ "$tag" = "$effective" ]; then
         err "could not resolve latest release tag for $repo (offline or rate-limited?)"
         return 1
@@ -78,7 +108,9 @@ node_latest_lts_version() {
     local url="https://nodejs.org/dist/index.tab" tmp ver
     tmp="$(mktemp)" || return 1
     if ! download "$url" "$tmp"; then
-        err "node: could not fetch $url (offline?)"; rm -f "$tmp"; return 1
+        err "node: could not fetch $url (offline?)"
+        rm -f "$tmp"
+        return 1
     fi
     # Locate the "lts" column by name (robust to column re-ordering), then print
     # the version of the first data row whose lts field is set (not "-").
@@ -106,14 +138,19 @@ install_neovim() {
     url="https://github.com/neovim/neovim-releases/releases/download/$tag/nvim-linux-x86_64.tar.gz"
     tmp="$(mktemp -d)" || return 1
     if ! download "$url" "$tmp/nvim.tar.gz"; then
-        err "neovim: download failed ($url)"; rm -rf "$tmp"; return 1
+        err "neovim: download failed ($url)"
+        rm -rf "$tmp"
+        return 1
     fi
     if ! tar -xzf "$tmp/nvim.tar.gz" -C "$tmp"; then
-        err "neovim: extract failed"; rm -rf "$tmp"; return 1
+        err "neovim: extract failed"
+        rm -rf "$tmp"
+        return 1
     fi
     if [ ! -x "$tmp/nvim-linux-x86_64/bin/nvim" ]; then
         err "neovim: unexpected archive layout (no nvim-linux-x86_64/bin/nvim)"
-        rm -rf "$tmp"; return 1
+        rm -rf "$tmp"
+        return 1
     fi
     dir="$OPT_DIR/nvim-linux-x86_64"
     rm -rf "$dir"
@@ -131,18 +168,25 @@ install_ripgrep() {
     fi
     info "installing ripgrep (latest stable)"
     local tag base url tmp
-    tag="$(latest_tag BurntSushi/ripgrep)" || return 1   # ripgrep tags have no leading 'v'
+    tag="$(latest_tag BurntSushi/ripgrep)" || return 1 # ripgrep tags have no leading 'v'
     base="ripgrep-$tag-x86_64-unknown-linux-musl"
     url="https://github.com/BurntSushi/ripgrep/releases/download/$tag/$base.tar.gz"
     tmp="$(mktemp -d)" || return 1
     if ! download "$url" "$tmp/rg.tar.gz" || ! tar -xzf "$tmp/rg.tar.gz" -C "$tmp"; then
-        err "ripgrep: download/extract failed ($url)"; rm -rf "$tmp"; return 1
+        err "ripgrep: download/extract failed ($url)"
+        rm -rf "$tmp"
+        return 1
     fi
     if [ ! -f "$tmp/$base/rg" ]; then
-        err "ripgrep: unexpected archive layout (no $base/rg)"; rm -rf "$tmp"; return 1
+        err "ripgrep: unexpected archive layout (no $base/rg)"
+        rm -rf "$tmp"
+        return 1
     fi
     cp -f "$tmp/$base/rg" "$BIN_DIR/rg" && chmod 0755 "$BIN_DIR/rg" || {
-        err "ripgrep: install failed"; rm -rf "$tmp"; return 1; }
+        err "ripgrep: install failed"
+        rm -rf "$tmp"
+        return 1
+    }
     rm -rf "$tmp"
     info "installed rg ($tag) -> $BIN_DIR/rg"
 }
@@ -156,17 +200,24 @@ install_fzf() {
     info "installing fzf (latest stable)"
     local tag ver url tmp
     tag="$(latest_tag junegunn/fzf)" || return 1
-    ver="${tag#v}"                                   # tag vX.Y.Z -> asset uses X.Y.Z
+    ver="${tag#v}" # tag vX.Y.Z -> asset uses X.Y.Z
     url="https://github.com/junegunn/fzf/releases/download/$tag/fzf-$ver-linux_amd64.tar.gz"
     tmp="$(mktemp -d)" || return 1
     if ! download "$url" "$tmp/fzf.tar.gz" || ! tar -xzf "$tmp/fzf.tar.gz" -C "$tmp"; then
-        err "fzf: download/extract failed ($url)"; rm -rf "$tmp"; return 1
+        err "fzf: download/extract failed ($url)"
+        rm -rf "$tmp"
+        return 1
     fi
     if [ ! -f "$tmp/fzf" ]; then
-        err "fzf: unexpected archive layout (no fzf binary)"; rm -rf "$tmp"; return 1
+        err "fzf: unexpected archive layout (no fzf binary)"
+        rm -rf "$tmp"
+        return 1
     fi
     cp -f "$tmp/fzf" "$BIN_DIR/fzf" && chmod 0755 "$BIN_DIR/fzf" || {
-        err "fzf: install failed"; rm -rf "$tmp"; return 1; }
+        err "fzf: install failed"
+        rm -rf "$tmp"
+        return 1
+    }
     rm -rf "$tmp"
     info "installed fzf ($tag) -> $BIN_DIR/fzf"
 }
@@ -185,22 +236,25 @@ install_node() {
     local ver base url tmp dir
     ver="$(node_latest_lts_version)" || return 1
     base="node-$ver-linux-x64"
-    url="https://nodejs.org/dist/$ver/$base.tar.gz"   # .tar.gz avoids needing xz
+    url="https://nodejs.org/dist/$ver/$base.tar.gz" # .tar.gz avoids needing xz
     tmp="$(mktemp -d)" || return 1
     if ! download "$url" "$tmp/node.tar.gz" || ! tar -xzf "$tmp/node.tar.gz" -C "$tmp"; then
-        err "node: download/extract failed ($url)"; rm -rf "$tmp"; return 1
+        err "node: download/extract failed ($url)"
+        rm -rf "$tmp"
+        return 1
     fi
     if [ ! -x "$tmp/$base/bin/node" ] || [ ! -e "$tmp/$base/bin/npm" ]; then
         err "node: unexpected archive layout (no $base/bin/node or npm)"
-        rm -rf "$tmp"; return 1
+        rm -rf "$tmp"
+        return 1
     fi
     dir="$OPT_DIR/$base"
     rm -rf "$dir"
     mv "$tmp/$base" "$dir"
     # Symlink the whole toolchain; npm/npx resolve node via ~/.local/bin on PATH.
     ln -sf "$dir/bin/node" "$BIN_DIR/node"
-    ln -sf "$dir/bin/npm"  "$BIN_DIR/npm"
-    ln -sf "$dir/bin/npx"  "$BIN_DIR/npx"
+    ln -sf "$dir/bin/npm" "$BIN_DIR/npm"
+    ln -sf "$dir/bin/npx" "$BIN_DIR/npx"
     rm -rf "$tmp"
     info "installed Node.js ($ver, bundled npm) -> $BIN_DIR/{node,npm,npx}"
 }
@@ -221,10 +275,14 @@ install_zsh() {
     # -e no keeps it from touching /etc/shells. Binary lands at $dir/bin/zsh.
     if have curl; then
         sh -c "$(curl -fsSL "$installer")" -- -e no -d "$LOCAL_PREFIX" || {
-            err "zsh: zsh-bin install failed"; return 1; }
+            err "zsh: zsh-bin install failed"
+            return 1
+        }
     else
         sh -c "$(wget -qO- "$installer")" -- -e no -d "$LOCAL_PREFIX" || {
-            err "zsh: zsh-bin install failed"; return 1; }
+            err "zsh: zsh-bin install failed"
+            return 1
+        }
     fi
     if [ ! -x "$BIN_DIR/zsh" ]; then
         err "zsh: zsh-bin did not produce $BIN_DIR/zsh"
@@ -233,12 +291,19 @@ install_zsh() {
     info "installed zsh (5.8) -> $BIN_DIR/zsh"
 }
 
+# Without a downloader every installer below fails; abort early with one
+# clear error instead of five confusing ones.
+if ! ensure_downloader; then
+    err "no downloader available; cannot install tools"
+    exit 1
+fi
+
 rc=0
-install_neovim  || rc=1
+install_neovim || rc=1
 install_ripgrep || rc=1
-install_fzf     || rc=1
-install_node    || rc=1
-install_zsh     || rc=1
+install_fzf || rc=1
+install_node || rc=1
+install_zsh || rc=1
 
 if [ "$rc" -ne 0 ]; then
     err "one or more tools failed to install"
