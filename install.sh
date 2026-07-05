@@ -35,9 +35,7 @@ fi
 echo "Creating vim temp directory"
 mkdir -p "$HOME/.vim-tmp"
 
-# Install neovim / ripgrep / fzf / zsh into ~/.local/bin
-# NOTE: Must be done before call to link.sh. Otherwise installation
-# of zsh 6.1.1 fails
+# Install neovim / ripgrep / fzf / zsh into ~/.local/bin.
 if ! bash "$REPO_DIR/install/tools.sh"; then
     echo "error: tool installation failed" >&2
     exit 1
@@ -49,4 +47,5 @@ bash "$REPO_DIR/install/link.sh"
 # Interactive git identity setup is intentionally left disabled (no questions).
 # bash "$REPO_DIR/install/git.sh"
 
-echo "Done. This did not change your login shell; start zsh manually with: zsh"
+echo "Done. The login shell is unchanged; if zsh was installed by this script,"
+echo "interactive bash sessions will hand over to it automatically (see ~/.bashrc)."
