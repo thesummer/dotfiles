@@ -259,6 +259,21 @@ install_node() {
     info "installed Node.js ($ver, bundled npm) -> $BIN_DIR/{node,npm,npx}"
 }
 
+# --- opencode (static via npm) -------------------------------------------
+install_opencode() {
+    if have opencode; then
+        info "opencode already present ($(command -v rg)); skipping"
+        return 0
+    fi
+    info "installing opencode (latest stable)"
+    if ! npm i -g opencode-ai@latest --allow-scripts=opencode-ai; then
+        err "opencode: Installation failed"
+        return 1
+    fi
+    ln -sf "$(npm prefix -g)/bin/opencode" "$BIN_DIR/opencode"
+    info "installed opencode -> $BIN_DIR/opencode"
+}
+
 # --- zsh (only if absent; romkatv/zsh-bin static zsh 5.8, relocatable) -----
 install_zsh() {
     if have zsh; then
@@ -326,6 +341,7 @@ install_neovim || rc=1
 install_ripgrep || rc=1
 install_fzf || rc=1
 install_node || rc=1
+install_opencode || rc=1
 install_zsh || rc=1
 
 if [ "$rc" -ne 0 ]; then
