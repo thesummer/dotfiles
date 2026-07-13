@@ -274,6 +274,35 @@ install_opencode() {
     info "installed opencode -> $BIN_DIR/opencode"
 }
 
+# --- devpod (single binary; installs to ~/.local/bin) ----------------------
+install_devpod() {
+    if have devpod; then
+        info "devpod already present ($(command -v devpod)); skipping"
+        return 0
+    fi
+    # Skip if running inside a container
+    if [ -f /run/.containerenv ] || [ -f /.dockerenv ]; then
+        info "running inside a container; skipping devpod installation"
+        return 0
+    fi
+    info "installing devpod (latest stable)"
+    local url tmp
+    url="https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64"
+    tmp="$(mktemp)" || return 1
+    if ! download "$url" "$tmp/devpod"; then
+        err "devpod: download failed ($url)"
+        rm -f "$tmp"
+        return 1
+    fi
+    cp -f "$tmp/devpod" "$BIN_DIR/devpod" && chmod 0755 "$BIN_DIR/devpod" || {
+        err "devpod: install failed"
+        rm -f "$tmp"
+        return 1
+    }
+    rm -f "$tmp"
+    info "installed devpod -> $BIN_DIR/devpod"
+}
+
 # --- zsh (only if absent; romkatv/zsh-bin static zsh 5.8, relocatable) -----
 install_zsh() {
     if have zsh; then
@@ -337,6 +366,7 @@ if ! ensure_downloader; then
 fi
 
 rc=0
+install_devpod || rc=1
 install_neovim || rc=1
 install_ripgrep || rc=1
 install_fzf || rc=1
