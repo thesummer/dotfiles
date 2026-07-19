@@ -274,6 +274,21 @@ install_opencode() {
     info "installed opencode -> $BIN_DIR/opencode"
 }
 
+# --- pi (static via npm) -------------------------------------------
+install_pi() {
+    if have pi; then
+        info "pi already present ($(command -v rg)); skipping"
+        return 0
+    fi
+    info "installing pi (latest stable)"
+    if ! npm install -g --ignore-scripts @earendil-works/pi-coding-agent; then
+        err "pi: Installation failed"
+        return 1
+    fi
+    ln -sf "$(npm prefix -g)/bin/pi" "$BIN_DIR/pi"
+    info "installed pi -> $BIN_DIR/pi"
+}
+
 # --- devpod (single binary; installs to ~/.local/bin) ----------------------
 install_devpod() {
     if have devpod; then
@@ -372,6 +387,7 @@ install_ripgrep || rc=1
 install_fzf || rc=1
 install_node || rc=1
 install_opencode || rc=1
+install_pi || rc=1
 install_zsh || rc=1
 
 if [ "$rc" -ne 0 ]; then
