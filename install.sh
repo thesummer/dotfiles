@@ -47,19 +47,20 @@ bash "$REPO_DIR/install/link.sh"
 # If zsh is available but is not the user's login shell, add a handoff snippet
 # so interactive bash sessions exec into zsh automatically. This keeps the
 # actual login shell unchanged (important for SSH / devcontainers).
-if command -v zsh >/dev/null 2>&1; then
+zsh_bin="$(command -v zsh 2>/dev/null || true)"
+if [[ -n "$zsh_bin" ]]; then
     user_shell="$(getent passwd "$(whoami)" | awk -F: '{print $7}')"
     bashrc="$HOME/.bashrc"
     marker='# >>> dotfiles zsh handoff >>>'
     if [[ "$user_shell" != *zsh ]] && ! grep -qF "$marker" "$bashrc" 2>/dev/null; then
-        echo "zsh found but is not the login shell ($user_shell); adding zsh handoff to $bashrc"
-        cat >>"$bashrc" <<'EOF'
+        echo "zsh found at $zsh_bin but is not the login shell ($user_shell); adding zsh handoff to $bashrc"
+        cat >>"$bashrc" <<EOF
 
 # >>> dotfiles zsh handoff >>> (added by dotfiles install/install.sh)
 # Replace interactive bash with zsh if available.
-if [ -z "${ZSH_VERSION:-}" ] && [ -x "$HOME/.local/bin/zsh" ]; then
-    case $- in
-        *i*) exec "$HOME/.local/bin/zsh" ;;
+if [ -z "\${ZSH_VERSION:-}" ]; then
+    case \$- in
+        *i*) exec $zsh_bin ;;
     esac
 fi
 # <<< dotfiles zsh handoff <<<
