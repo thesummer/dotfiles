@@ -318,6 +318,24 @@ install_devpod() {
     info "installed devpod -> $BIN_DIR/devpod"
 }
 
+# --- herdr (Rust CLI tool installer) ---------------------------------------
+install_herdr() {
+    if have herdr; then
+        info "herdr already present ($(command -v herdr)); skipping"
+        return 0
+    fi
+    info "installing herdr (latest stable) into $BIN_DIR"
+    if ! HERDR_INSTALL_DIR="$BIN_DIR" curl -fsSL https://herdr.dev/install.sh | sh; then
+        err "herdr: installation failed"
+        return 1
+    fi
+    if [ ! -x "$BIN_DIR/herdr" ]; then
+        err "herdr: $BIN_DIR/herdr not found after install"
+        return 1
+    fi
+    info "installed herdr -> $BIN_DIR/herdr"
+}
+
 # --- zsh (only if absent; romkatv/zsh-bin static zsh 5.8, relocatable) -----
 install_zsh() {
     if have zsh; then
@@ -388,6 +406,7 @@ install_fzf || rc=1
 install_node || rc=1
 install_opencode || rc=1
 install_pi || rc=1
+install_herdr || rc=1
 install_zsh || rc=1
 
 if [ "$rc" -ne 0 ]; then
