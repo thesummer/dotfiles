@@ -44,8 +44,34 @@ fi
 # Symlink *.symlink files and config/ entries into $HOME.
 bash "$REPO_DIR/install/link.sh"
 
+# If zsh is available but is not the user's login shell, add a handoff snippet
+# so interactive bash sessions exec into zsh automatically. This keeps the
+# actual login shell unchanged (important for SSH / devcontainers).
+if command -v zsh >/dev/null 2>&1; then
+    user_shell="$(getent passwd "$(whoami)" | awk -F: '{print $7}')"
+    bashrc="$HOME/.bashrc"
+    marker='# >>> dotfiles zsh handoff >>>'
+    if [[ "$user_shell" != *zsh ]] && ! grep -qF "$marker" "$bashrc" 2>/dev/null; then
+        echo "zsh found but is not the login shell ($user_shell); adding zsh handoff to $bashrc"
+        cat >>"$bashrc" <<'EOF'
+
+# >>> dotfiles zsh handoff >>> (added by dotfiles install/install.sh)
+# Replace interactive bash with zsh if available.
+if [ -z "${ZSH_VERSION:-}" ] && [ -x "$HOME/.local/bin/zsh" ]; then
+    case $- in
+        *i*) exec "$HOME/.local/bin/zsh" ;;
+    esac
+fi
+# <<< dotfiles zsh handoff <<<
+EOF
+    elif grep -qF "$marker" "$bashrc" 2>/dev/null; then
+        echo "zsh handoff snippet already present in $bashrc"
+    else
+        echo "zsh is the login shell; skipping handoff snippet"
+    fi
+fi
+
 # Interactive git identity setup is intentionally left disabled (no questions).
 # bash "$REPO_DIR/install/git.sh"
 
-echo "Done. The login shell is unchanged; if zsh was installed by this script,"
-echo "interactive bash sessions will hand over to it automatically (see ~/.bashrc)."
+echo "Done."

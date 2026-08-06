@@ -366,29 +366,6 @@ install_zsh() {
         return 1
     fi
     info "installed zsh (5.8) -> $BIN_DIR/zsh"
-
-    # zsh-bin was installed just now: make interactive bash sessions hand
-    # over to it automatically (the login shell itself stays bash). The
-    # snippet is guarded by a marker so re-runs don't append duplicates,
-    # checks that the binary still exists before exec'ing, and only fires
-    # in interactive shells that are not already zsh.
-    local bashrc="$HOME/.bashrc" marker='# >>> dotfiles zsh handoff >>>'
-    if grep -qF "$marker" "$bashrc" 2>/dev/null; then
-        info "zsh auto-start snippet already present in $bashrc"
-    else
-        info "adding zsh auto-start snippet to $bashrc"
-        cat >>"$bashrc" <<'EOF'
-
-# >>> dotfiles zsh handoff >>> (added by dotfiles install/tools.sh)
-# Replace interactive bash with the zsh installed by zsh-bin, if present.
-if [ -z "${ZSH_VERSION:-}" ] && [ -x "$HOME/.local/bin/zsh" ]; then
-    case $- in
-        *i*) exec "$HOME/.local/bin/zsh" ;;
-    esac
-fi
-# <<< dotfiles zsh handoff <<<
-EOF
-    fi
 }
 
 # Without a downloader every installer below fails; abort early with one
