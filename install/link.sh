@@ -5,17 +5,28 @@
 : "${REPO_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 DOTFILES="$REPO_DIR"
 
+# Check if running in a container
+is_container=false
+if [ -f /run/.containerenv ] || [ -f /.dockerenv ]; then
+    is_container=true
+fi
+
 echo -e "\\nCreating symlinks"
 echo "=============================="
 linkables=$( find -H "$DOTFILES" -maxdepth 3 -name '*.symlink' )
 for file in $linkables ; do
     target="$HOME/.$( basename "$file" '.symlink' )"
     if [ -e "$target" ]; then
-        echo "~${target#$HOME} already exists... Skipping."
-    else
-        echo "Creating symlink for $file"
-        ln -s "$file" "$target"
+        if [ "$is_container" = true ]; then
+            echo "Running in container - backing up ~${target#$HOME} to ~${target#$HOME}.bak"
+            mv "$target" "${target}.bak"
+        else
+            echo "~${target#$HOME} already exists... Skipping."
+            continue
+        fi
     fi
+    echo "Creating symlink for $file"
+    ln -s "$file" "$target"
 done
 
 echo -e "\\n\\ninstalling to ~/.config"
