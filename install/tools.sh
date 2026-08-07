@@ -388,5 +388,35 @@ install_zsh || rc=1
 
 if [ "$rc" -ne 0 ]; then
     err "one or more tools failed to install"
+    exit "$rc"
 fi
-exit "$rc"
+
+# If zsh is available but is not the user's login shell, add a handoff snippet
+# so interactive bash sessions exec into zsh automatically. This keeps the
+# actual login shell unchanged (important for SSH / devcontainers).
+zsh_bin="$(command -v zsh 2>/dev/null || true)"
+if [[ -n "$zsh_bin" ]]; then
+    user_shell="$(getent passwd "$(whoami)" | awk -F: '{print $7}')"
+    bashrc="$HOME/.bashrc"
+    marker='# >>> dotfiles zsh handoff >>>'
+    if [[ "$user_shell" != *zsh ]] && ! grep -qF "$marker" "$bashrc" 2>/dev/null; then
+        echo "zsh found at $zsh_bin but is not the login shell ($user_shell); adding zsh handoff to $bashrc"
+        cat >>"$bashrc" <<EOF
+
+# >>> dotfiles zsh handoff >>> (added by dotfiles install/install.sh)
+# Replace interactive bash with zsh if available.
+if [ -z "\${ZSH_VERSION:-}" ]; then
+    case \$- in
+        *i*) exec $zsh_bin ;;
+    esac
+fi
+# <<< dotfiles zsh handoff <<<
+EOF
+    elif grep -qF "$marker" "$bashrc" 2>/dev/null; then
+        echo "zsh handoff snippet already present in $bashrc"
+    else
+        echo "zsh is the login shell; skipping handoff snippet"
+    fi
+fi
+
+exit 0
