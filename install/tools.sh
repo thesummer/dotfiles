@@ -336,6 +336,31 @@ install_herdr() {
     info "installed herdr -> $BIN_DIR/herdr"
 }
 
+# --- git (static binary from darkvertex/static-git) -------------------------
+install_git() {
+    info "installing git (latest static binary from darkvertex/static-git)"
+    local url tmp
+    url="https://github.com/darkvertex/static-git/releases/latest/download/git-binaries.linux-64bit.tar.gz"
+    tmp="$(mktemp -d)" || return 1
+    if ! download "$url" "$tmp/git.tar.gz" || ! tar -xzf "$tmp/git.tar.gz" -C "$tmp"; then
+        err "git: download/extract failed ($url)"
+        rm -rf "$tmp"
+        return 1
+    fi
+    if [ ! -x "$tmp/bin/git" ]; then
+        err "git: unexpected archive layout (no bin/git)"
+        rm -rf "$tmp"
+        return 1
+    fi
+    cp -f "$tmp/bin/git" "$BIN_DIR/git" && chmod 0755 "$BIN_DIR/git" || {
+        err "git: install failed"
+        rm -rf "$tmp"
+        return 1
+    }
+    rm -rf "$tmp"
+    info "installed git -> $BIN_DIR/git"
+}
+
 # --- zsh (only if absent; romkatv/zsh-bin static zsh 5.8, relocatable) -----
 install_zsh() {
     if have zsh; then
@@ -376,6 +401,7 @@ if ! ensure_downloader; then
 fi
 
 rc=0
+install_git || rc=1
 install_devpod || rc=1
 install_neovim || rc=1
 install_ripgrep || rc=1
