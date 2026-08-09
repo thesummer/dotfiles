@@ -347,12 +347,12 @@ install_git() {
         rm -rf "$tmp"
         return 1
     fi
-    if [ ! -x "$tmp/bin/git" ]; then
-        err "git: unexpected archive layout (no bin/git)"
+    if [ ! -x "$tmp/git" ]; then
+        err "git: unexpected archive layout (no git)"
         rm -rf "$tmp"
         return 1
     fi
-    cp -f "$tmp/bin/git" "$BIN_DIR/git" && chmod 0755 "$BIN_DIR/git" || {
+    cp -f "$tmp/git" "$BIN_DIR/git" && chmod 0755 "$BIN_DIR/git" || {
         err "git: install failed"
         rm -rf "$tmp"
         return 1
